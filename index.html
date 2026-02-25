@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1280, height=720, initial-scale=1.0" />
 <title>Actemium – Compressor Dashboard</title>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap');
 
@@ -23,22 +24,36 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Hard lock the canvas to avoid any overflow/scrollbars in embeds */
   html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+    width: 1280px;
+    height: 720px;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
 
-.page {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 16 / 9;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
+  /* Extra safety wrapper to clip any rounding/shadow overflow */
+  .viewport {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .page {
+    width: 1280px;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Hide scrollbars even if host tries to show them */
+  ::-webkit-scrollbar { width: 0; height: 0; }
 
   /* ── TOP BANNER ── */
   .banner {
@@ -79,7 +94,7 @@
     margin-top: 2px;
   }
 
-  .banner-info { text-align: right; color: rgba(255,255,255,.85); font-size: 13px; min-width: 160px; }
+  .banner-info { text-align: right; color: rgba(255,255,255,.85); font-size: 13px; min-width: 170px; }
   #live-time { font-weight: 600; font-size: 14px; color: #fff; }
   .live-tag { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; letter-spacing: .6px; text-transform: uppercase; }
 
@@ -138,6 +153,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 0;
   }
 
   .card-header {
@@ -149,7 +165,7 @@
     flex-shrink: 0;
   }
   .card-title { font-family:'Barlow Condensed'; font-size: 13px; font-weight: 600; color: #fff; letter-spacing: .8px; text-transform: uppercase; }
-  .card-body  { padding: 16px; flex: 1; }
+  .card-body  { padding: 16px; flex: 1; min-height: 0; }
 
   /* ── CHART PLACEHOLDER ── */
   .chart-placeholder {
@@ -206,166 +222,176 @@
   .footer { text-align:center; padding:7px; font-size:10px; color:var(--muted); flex-shrink:0; }
 </style>
 </head>
+
 <body>
-<div class="page">
+  <div class="viewport">
+    <div class="page">
 
-<!-- BANNER -->
-<div class="banner">
-  <div style="display:flex;align-items:center;gap:18px;">
-    <img class="banner-logo" src="data:image/png;base64,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dltoodta+41cWoKm6mtiZGWywBnBwknI8Rz1UnopreoZFsXCctp/JEdeFRXJSjHlfmRVYtmaS1bvVW4bb9PLNUVE05pDTgNaZM8uLizyz6KVHMa7HE1rsHIyOi8oq9t87mnN70tfQmrqhWmorW+Tl90tHxa70bVabmrn0LKhzHGZkYeW8Jz0JCwdudvoNG7dzaOiuclZHL3/AOMOiDCO8GD4cnp8V2yIr7FX4afG9/UOmDn4muda+hE+y+y1Jtrfau609/nuTqmn7ksfTCMN5g5yHH0X33Y2Q0puDcvlepnrLbdOAMdUUxaWyAdONrhzx6ggqUUUrzb3b4vd5viR/ZafD8Pt8pWY9k+Li4Rr2fuOLPB8mc8fHvcZ9+FJm0myultu6w3OlkqbldiwsFXUkDu2nqGMHJufU5PvUmot7eo5Nse2c+Pov2NK8HHrl3RjyRNvFspR7janpb5UX+e3up6dsAiZTCQOAc52clw/KUsOAcC1wBB6gryirzunOMYSfEfQnhTCEnKK5fqeksYfA+IeEOaW8h05KONj9pqXa/5Y9mvU1z+U+44u8gEfd933nTBOc95+hSUixG6cYSgnw/X6CVUZSU2uV6BERRkgREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAf/Z" alt="Actemium">
-  </div>
-  <div class="banner-center">
-    <div class="banner-title">Compressor Monitoring Dashboard</div>
-    <div class="banner-machine">Compresseur d'air 7,5 HP. 500 litres Courroie — NUAIR</div>
-  </div>
-  <div class="banner-info">
-    <div id="live-time"></div>
-    <div class="live-tag">Live Data Feed</div>
-  </div>
-</div>
+      <!-- BANNER -->
+      <div class="banner">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <!-- Keep your original base64 logo exactly -->
+          <img class="banner-logo" src="data:image/png;base64,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dltoodta+41cWoKm6mtiZGWywBnBwknI8Rz1UnopreoZFsXCctp/JEdeFRXJSjHlfmRVYtmaS1bvVW4bb9PLNUVE05pDTgNaZM8uLizyz6KVHMa7HE1rsHIyOi8oq9t87mnN70tfQmrqhWmorW+Tl90tHxa70bVabmrn0LKhzHGZkYeW8Jz0JCwdudvoNG7dzaOiuclZHL3/AOMOiDCO8GD4cnp8V2yIr7FX4afG9/UOmDn4muda+hE+y+y1Jtrfau609/nuTqmn7ksfTCMN5g5yHH0X33Y2Q0puDcvlepnrLbdOAMdUUxaWyAdONrhzx6ggqUUUrzb3b4vd5viR/ZafD8Pt8pWY9k+Li4Rr2fuOLPB8mc8fHvcZ9+FJm0myultu6w3OlkqbldiwsFXUkDu2nqGMHJufU5PvUmot7eo5Nse2c+Pov2NK8HHrl3RjyRNvFspR7janpb5UX+e3up6dsAiZTCQOAc52clw/KUsOAcC1wBB6gryirzunOMYSfEfQnhTCEnKK5fqeksYfA+IeEOaW8h05KONj9pqXa/5Y9mvU1z+U+44u8gEfd933nTBOc95+hSUixG6cYSgnw/X6CVUZSU2uV6BERRkgREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAf/Z" alt="Actemium" />
+        </div>
 
-<!-- KPI STRIP -->
-<div class="kpi-strip">
-  <div class="kpi accent">
-    <div class="kpi-label">VIB_Latest_Value</div>
-    <div class="kpi-value">— <span>mm/s</span></div>
-    <div class="kpi-sub">Most recent reading</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">VIB_Avg_Today</div>
-    <div class="kpi-value">— <span>mm/s</span></div>
-    <div class="kpi-sub">Average today</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">VIB_Max_Today</div>
-    <div class="kpi-value">— <span>mm/s</span></div>
-    <div class="kpi-sub">Peak today</div>
-  </div>
-  <div class="kpi danger">
-    <div class="kpi-label">VIB_Total_Alerts</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">Threshold breaches</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Days Since Maintenance</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">VIB_Days_Since_Last_Maintenance</div>
-  </div>
-</div>
+        <div class="banner-center">
+          <div class="banner-title">Compressor Monitoring Dashboard</div>
+          <div class="banner-machine">Compresseur d'air 7,5 HP. 500 litres Courroie — NUAIR</div>
+        </div>
 
-<!-- MAIN CONTENT -->
-<div class="main">
-
-  <!-- LEFT COLUMN -->
-  <div class="left-col">
-
-    <!-- Vibration Chart -->
-    <div class="card" style="flex:1.6;">
-      <div class="card-header">
-        <span class="card-title">Vibration (mm/s) — Live Trend</span>
-        <div style="display:flex;gap:14px;font-size:10px;">
-          <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
-            <span style="width:8px;height:8px;border-radius:50%;background:#0078D4;display:inline-block;"></span>Vibration
-          </span>
-          <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
-            <span style="width:8px;height:8px;border-radius:50%;background:#F4A300;display:inline-block;"></span>Warn 4.5
-          </span>
-          <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
-            <span style="width:8px;height:8px;border-radius:50%;background:#D13438;display:inline-block;"></span>Critical 7.1
-          </span>
+        <div class="banner-info">
+          <div id="live-time"></div>
+          <div class="live-tag">Live Data Feed</div>
         </div>
       </div>
-      <div class="card-body">
-        <div class="chart-placeholder">
-          <span class="placeholder-label">Chart Area</span>
+
+      <!-- KPI STRIP -->
+      <div class="kpi-strip">
+        <div class="kpi accent">
+          <div class="kpi-label">VIB_Latest_Value</div>
+          <div class="kpi-value">— <span>mm/s</span></div>
+          <div class="kpi-sub">Most recent reading</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">VIB_Avg_Today</div>
+          <div class="kpi-value">— <span>mm/s</span></div>
+          <div class="kpi-sub">Average today</div>
+        </div>
+        <div class="kpi warn">
+          <div class="kpi-label">VIB_Max_Today</div>
+          <div class="kpi-value">— <span>mm/s</span></div>
+          <div class="kpi-sub">Peak today</div>
+        </div>
+        <div class="kpi danger">
+          <div class="kpi-label">VIB_Total_Alerts</div>
+          <div class="kpi-value">—</div>
+          <div class="kpi-sub">Threshold breaches</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Days Since Maintenance</div>
+          <div class="kpi-value">—</div>
+          <div class="kpi-sub">VIB_Days_Since_Last_Maintenance</div>
         </div>
       </div>
-    </div>
 
-    <!-- Alert Log -->
-    <div class="card" style="flex:1;">
-      <div class="card-header">
-        <span class="card-title">Recent Alerts</span>
-      </div>
-      <div class="card-body" style="padding:0;overflow:hidden;">
-        <table class="alert-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Value (mm/s)</th>
-              <th>Threshold</th>
-              <th>Severity</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="4" style="text-align:center;padding:16px;">No data</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- MAIN CONTENT -->
+      <div class="main">
 
-  </div>
+        <!-- LEFT COLUMN -->
+        <div class="left-col">
 
-  <!-- RIGHT COLUMN -->
-  <div class="right-col">
-
-    <!-- Gauge -->
-    <div class="card">
-      <div class="card-header"><span class="card-title">Current Vibration Level</span></div>
-      <div class="card-body">
-        <div class="gauge-placeholder">
-          <span class="placeholder-label">Gauge Area</span>
-        </div>
-        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;">mm/s — ISO 10816 Zone</div>
-      </div>
-    </div>
-
-    <!-- Equipment Status -->
-    <div class="card" style="flex:1;">
-      <div class="card-header"><span class="card-title">Equipment Status</span></div>
-      <div class="card-body">
-        <div class="status-panel">
-          <div class="status-item">
-            <div class="status-icon">📳</div>
-            <div>
-              <div class="status-label">Vibration Level</div>
-              <div class="status-val">—</div>
+          <!-- Vibration Chart -->
+          <div class="card" style="flex:1.6;">
+            <div class="card-header">
+              <span class="card-title">Vibration (mm/s) — Live Trend</span>
+              <div style="display:flex;gap:14px;font-size:10px;">
+                <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#0078D4;display:inline-block;"></span>Vibration
+                </span>
+                <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#F4A300;display:inline-block;"></span>Warn 4.5
+                </span>
+                <span style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-weight:600;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#D13438;display:inline-block;"></span>Critical 7.1
+                </span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-placeholder">
+                <span class="placeholder-label">Chart Area</span>
+              </div>
             </div>
           </div>
-          <div class="status-item">
-            <div class="status-icon">🔧</div>
-            <div>
-              <div class="status-label">Maintenance Status</div>
-              <div class="status-val">—</div>
+
+          <!-- Alert Log -->
+          <div class="card" style="flex:1;">
+            <div class="card-header">
+              <span class="card-title">Recent Alerts</span>
+            </div>
+            <div class="card-body" style="padding:0;overflow:hidden;">
+              <table class="alert-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Value (mm/s)</th>
+                    <th>Threshold</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted);font-style:normal;">No data</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="status-item">
-            <div class="status-icon">🔔</div>
-            <div>
-              <div class="status-label">Total Alerts Today</div>
-              <div class="status-val">—</div>
-            </div>
-          </div>
+
         </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <!-- Gauge -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Current Vibration Level</span></div>
+            <div class="card-body">
+              <div class="gauge-placeholder">
+                <span class="placeholder-label">Gauge Area</span>
+              </div>
+              <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;">
+                mm/s — ISO 10816 Zone
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipment Status -->
+          <div class="card" style="flex:1;">
+            <div class="card-header"><span class="card-title">Equipment Status</span></div>
+            <div class="card-body">
+              <div class="status-panel">
+                <div class="status-item">
+                  <div class="status-icon">📳</div>
+                  <div>
+                    <div class="status-label">Vibration Level</div>
+                    <div class="status-val">—</div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-icon">🔧</div>
+                  <div>
+                    <div class="status-label">Maintenance Status</div>
+                    <div class="status-val">—</div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-icon">🔔</div>
+                  <div>
+                    <div class="status-label">Total Alerts Today</div>
+                    <div class="status-val">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
+
+      <div class="footer">
+        Actemium Compressor Monitoring &nbsp;|&nbsp; Powered by Power BI HTML Visual &nbsp;|&nbsp; Data: Alerts · SensorReadings · Measures
+      </div>
+
     </div>
-
   </div>
-
-</div>
-
-<div class="footer">Actemium Compressor Monitoring &nbsp;|&nbsp; Powered by Power BI HTML Visual &nbsp;|&nbsp; Data: Alerts · SensorReadings · Measures</div>
-
-</div>
 
 <script>
-function tick(){
-  const now = new Date();
-  document.getElementById('live-time').textContent =
-    now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})
-    + '  ' + now.toLocaleDateString([], {day:'2-digit',month:'short',year:'numeric'});
-}
-tick(); setInterval(tick, 1000);
+  function tick(){
+    const now = new Date();
+    document.getElementById('live-time').textContent =
+      now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})
+      + '  ' + now.toLocaleDateString([], {day:'2-digit',month:'short',year:'numeric'});
+  }
+  tick(); setInterval(tick, 1000);
 </script>
 </body>
 </html>
